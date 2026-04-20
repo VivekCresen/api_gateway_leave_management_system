@@ -20,6 +20,10 @@ spring:
             uri: lb://leave-service
             predicates:
               - Path=/api/leaves/**
+          - id: leave-service-holidays
+            uri: lb://leave-service
+            predicates:
+              - Path=/api/holidays/**
 
 server:
   port: 8080
