@@ -3,11 +3,6 @@ spring:
     name: api-gateway
   config:
     import: optional:configserver:http://localhost:8888
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
   cloud:
     gateway:
       mvc:
@@ -24,6 +19,13 @@ spring:
             uri: lb://leave-service
             predicates:
               - Path=/api/holidays/**
+          - id: leave-service-chatbot
+            uri: lb://leave-service
+            predicates:
+              - Path=/api/chatbot/**
+    loadbalancer:
+      cache:
+        ttl: 5s
 
 server:
   port: 8080
@@ -32,8 +34,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
 
 management:
   endpoints:
