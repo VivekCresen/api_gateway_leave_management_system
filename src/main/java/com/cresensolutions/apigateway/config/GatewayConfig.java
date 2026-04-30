@@ -12,11 +12,14 @@ import org.springframework.web.servlet.function.ServerResponse;
 @Configuration
 public class GatewayConfig {
 
+    private static final String USER_SERVICE_ID = "USER-SERVICE";
+    private static final String LEAVE_SERVICE_ID = "LEAVE-SERVICE";
+
     @Bean
     public RouterFunction<ServerResponse> userServiceRoute() {
         return GatewayRouterFunctions.route("user-service")
                 .route(RequestPredicates.path("/api/users/**"), HandlerFunctions.http())
-                .filter(LoadBalancerFilterFunctions.lb("user-service"))
+                .filter(LoadBalancerFilterFunctions.lb(USER_SERVICE_ID))
                 .build();
     }
 
@@ -24,7 +27,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceRoute() {
         return GatewayRouterFunctions.route("leave-service")
                 .route(RequestPredicates.path("/api/leaves/**"), HandlerFunctions.http())
-                .filter(LoadBalancerFilterFunctions.lb("leave-service"))
+                .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .build();
     }
 
@@ -32,7 +35,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceHolidaysRoute() {
         return GatewayRouterFunctions.route("leave-service-holidays")
                 .route(RequestPredicates.path("/api/holidays/**"), HandlerFunctions.http())
-                .filter(LoadBalancerFilterFunctions.lb("leave-service"))
+                .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .build();
     }
 
@@ -40,7 +43,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceChatbotRoute() {
         return GatewayRouterFunctions.route("leave-service-chatbot")
                 .route(RequestPredicates.path("/api/chatbot/**"), HandlerFunctions.http())
-                .filter(LoadBalancerFilterFunctions.lb("leave-service"))
+                .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .build();
     }
 }

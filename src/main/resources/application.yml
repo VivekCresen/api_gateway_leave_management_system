@@ -5,24 +5,6 @@ spring:
     import: optional:configserver:http://localhost:8888
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: user-service
-            uri: lb://user-service
-            predicates:
-              - Path=/api/users/**
-          - id: leave-service
-            uri: lb://leave-service
-            predicates:
-              - Path=/api/leaves/**
-          - id: leave-service-holidays
-            uri: lb://leave-service
-            predicates:
-              - Path=/api/holidays/**
-          - id: leave-service-chatbot
-            uri: lb://leave-service
-            predicates:
-              - Path=/api/chatbot/**
     loadbalancer:
       cache:
         ttl: 5s
@@ -34,7 +16,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    registry-fetch-interval-seconds: 5
+    registry-fetch-interval-seconds: 10
+    initial-instance-info-replication-interval-seconds: 5
+    instance-info-replication-interval-seconds: 5
+    eureka-server-connect-timeout-seconds: 10
+    eureka-server-read-timeout-seconds: 10
   instance:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
