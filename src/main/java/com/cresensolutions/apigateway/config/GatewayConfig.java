@@ -30,6 +30,17 @@ public class GatewayConfig {
     }
 
     @Bean
+    public RouterFunction<ServerResponse> userServiceCountriesRoute() {
+        return GatewayRouterFunctions.route("user-service-countries")
+                .route(RequestPredicates.path("/api/countries/**"), HandlerFunctions.http())
+                .filter(LoadBalancerFilterFunctions.lb(USER_SERVICE_ID))
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker(
+                        "user-service-cb",
+                        URI.create("forward:/fallback/user-service")))
+                .build();
+    }
+
+    @Bean
     public RouterFunction<ServerResponse> leaveServiceRoute() {
         return GatewayRouterFunctions.route("leave-service")
                 .route(RequestPredicates.path("/api/leaves/**"), HandlerFunctions.http())
