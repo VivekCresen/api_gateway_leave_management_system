@@ -37,6 +37,10 @@ management:
     ratelimiters:
       enabled: true
 
+logging:
+  level:
+    io.micrometer.core.instrument.MeterRegistry: DEBUG
+
 # ── Resilience4j ──────────────────────────────────────────────────────────────
 resilience4j:
 
@@ -60,10 +64,12 @@ resilience4j:
         base-config: default
       chatbot-cb:
         # Chatbot is slower — be more lenient before opening
+        base-config: default
         sliding-window-size: 5
         failure-rate-threshold: 60
         slow-call-duration-threshold: 30s
         wait-duration-in-open-state: 30s
+        register-health-indicator: true
 
   ratelimiter:
     configs:

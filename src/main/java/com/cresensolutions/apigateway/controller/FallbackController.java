@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/**
- * Fallback endpoints returned by the circuit breaker when a downstream
- * service is unavailable or the circuit is open.
- */
+
 @RestController
 @RequestMapping("/fallback")
 public class FallbackController {
@@ -35,10 +32,8 @@ public class FallbackController {
 
     @RequestMapping("/chatbot")
     public ResponseEntity<Map<String, String>> chatbotFallback() {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(Map.of(
-                        "error", "Chatbot is currently unavailable.",
-                        "message", "The AI model is taking too long or the service is down. Please try again in a moment."
-                ));
+        return ResponseEntity.ok(Map.of(
+                "response", "Sorry, I'm having trouble connecting. The AI assistant is temporarily unavailable. Please try again in a moment."
+        ));
     }
 }
