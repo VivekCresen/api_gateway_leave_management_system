@@ -1,5 +1,6 @@
 package com.cresensolutions.apigateway.config;
 
+import com.cresensolutions.apigateway.filter.AuthHeaderForwardingFilter;
 import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.filter.LoadBalancerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
@@ -18,10 +19,17 @@ public class GatewayConfig {
     private static final String USER_SERVICE_ID  = "USER-SERVICE";
     private static final String LEAVE_SERVICE_ID = "LEAVE-SERVICE";
 
+    private final AuthHeaderForwardingFilter authHeaderForwardingFilter;
+
+    public GatewayConfig(AuthHeaderForwardingFilter authHeaderForwardingFilter) {
+        this.authHeaderForwardingFilter = authHeaderForwardingFilter;
+    }
+
     @Bean
     public RouterFunction<ServerResponse> userServiceRoute() {
         return GatewayRouterFunctions.route("user-service")
                 .route(RequestPredicates.path("/api/users/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
                 .filter(LoadBalancerFilterFunctions.lb(USER_SERVICE_ID))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "user-service-cb",
@@ -33,6 +41,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> userServiceCountriesRoute() {
         return GatewayRouterFunctions.route("user-service-countries")
                 .route(RequestPredicates.path("/api/countries/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
                 .filter(LoadBalancerFilterFunctions.lb(USER_SERVICE_ID))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "user-service-cb",
@@ -44,6 +53,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceRoute() {
         return GatewayRouterFunctions.route("leave-service")
                 .route(RequestPredicates.path("/api/leaves/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
                 .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "leave-service-cb",
@@ -55,6 +65,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceHolidaysRoute() {
         return GatewayRouterFunctions.route("leave-service-holidays")
                 .route(RequestPredicates.path("/api/holidays/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
                 .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "leave-service-cb",
@@ -66,6 +77,7 @@ public class GatewayConfig {
     public RouterFunction<ServerResponse> leaveServiceChatbotRoute() {
         return GatewayRouterFunctions.route("leave-service-chatbot")
                 .route(RequestPredicates.path("/api/chatbot/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
                 .filter(LoadBalancerFilterFunctions.lb(LEAVE_SERVICE_ID))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "chatbot-cb",
