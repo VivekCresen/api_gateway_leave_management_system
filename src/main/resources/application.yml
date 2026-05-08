@@ -83,6 +83,14 @@ resilience4j:
         slow-call-duration-threshold: 30s
         wait-duration-in-open-state: 30s
         register-health-indicator: true
+      document-service-cb:
+        # Document service - be lenient with timeouts
+        base-config: default
+        sliding-window-size: 8
+        failure-rate-threshold: 60
+        slow-call-duration-threshold: 15s
+        wait-duration-in-open-state: 20s
+        register-health-indicator: true
 
   ratelimiter:
     configs:
@@ -98,5 +106,9 @@ resilience4j:
         base-config: default
       chatbot-rl:
         limit-for-period: 10          # chatbot is expensive — tighter cap
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+      document-service-rl:
+        limit-for-period: 20          # document service - moderate cap
         limit-refresh-period: 1s
         timeout-duration: 0s

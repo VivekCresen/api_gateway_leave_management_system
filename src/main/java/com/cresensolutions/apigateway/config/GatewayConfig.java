@@ -18,6 +18,7 @@ public class GatewayConfig {
 
     private static final String USER_SERVICE_ID  = "USER-SERVICE";
     private static final String LEAVE_SERVICE_ID = "LEAVE-SERVICE";
+    private static final String DOCUMENT_SERVICE_ID = "DOCUMENT-SERVICE";
 
     private final AuthHeaderForwardingFilter authHeaderForwardingFilter;
 
@@ -82,6 +83,18 @@ public class GatewayConfig {
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
                         "chatbot-cb",
                         URI.create("forward:/fallback/chatbot")))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> documentServiceRoute() {
+        return GatewayRouterFunctions.route("document-service")
+                .route(RequestPredicates.path("/api/documents/**"), HandlerFunctions.http())
+                .filter(authHeaderForwardingFilter)
+                .filter(LoadBalancerFilterFunctions.lb(DOCUMENT_SERVICE_ID))
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker(
+                        "document-service-cb",
+                        URI.create("forward:/fallback/document-service")))
                 .build();
     }
 }
