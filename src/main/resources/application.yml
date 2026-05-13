@@ -1,0 +1,114 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    gateway:
+    loadbalancer:
+      cache:
+        ttl: 5s
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 10
+    initial-instance-info-replication-interval-seconds: 5
+    instance-info-replication-interval-seconds: 5
+    eureka-server-connect-timeout-seconds: 10
+    eureka-server-read-timeout-seconds: 10
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,ratelimiters,prometheus,metrics
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 50ms,100ms,200ms,500ms,1s
+
+logging:
+  level:
+    io.micrometer.core.instrument.MeterRegistry: DEBUG
+
+# ── Security ──────────────────────────────────────────────────────────────────
+security:
+  jwt:
+    secret: ${JWT_SECRET:Q3Jlc2VuTGVhdmVNYW5hZ2VtZW50U3lzdGVtSldUU2VjcmV0S2V5Rm9ySFMyNTY=}
+
+# ── Resilience4j ──────────────────────────────────────────────────────────────
+resilience4j:
+
+  circuitbreaker:
+    configs:
+      default:
+        # Open after 5 failures in a 10-call sliding window
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50          # 50% = 5 out of 10 calls
+        slow-call-duration-threshold: 5s
+        slow-call-rate-threshold: 80
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+    instances:
+      user-service-cb:
+        base-config: default
+      leave-service-cb:
+        base-config: default
+      chatbot-cb:
+        # Chatbot is slower — be more lenient before opening
+        base-config: default
+        sliding-window-size: 5
+        failure-rate-threshold: 60
+        slow-call-duration-threshold: 30s
+        wait-duration-in-open-state: 30s
+        register-health-indicator: true
+      document-service-cb:
+        # Document service - be lenient with timeouts
+        base-config: default
+        sliding-window-size: 8
+        failure-rate-threshold: 60
+        slow-call-duration-threshold: 15s
+        wait-duration-in-open-state: 20s
+        register-health-indicator: true
+
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 50          # max requests per refresh period
+        limit-refresh-period: 1s
+        timeout-duration: 0s          # fail immediately if limit exceeded
+        register-health-indicator: true
+    instances:
+      user-service-rl:
+        base-config: default
+      leave-service-rl:
+        base-config: default
+      chatbot-rl:
+        limit-for-period: 10          # chatbot is expensive — tighter cap
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+      document-service-rl:
+        limit-for-period: 20          # document service - moderate cap
+        limit-refresh-period: 1s
+        timeout-duration: 0s
